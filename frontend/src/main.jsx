@@ -1,0 +1,27 @@
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Invoices } from "./components/Invoices";
+import { LiveDashboard } from "./components/LiveDashboard";
+import { NotFound } from "./components/NotFound";
+import { SmartControl } from "./components/SmartControl";
+import { UsageHistory } from "./components/UsageHistory";
+import { AppShell } from "./ui/AppShell";
+import "./styles.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route path="/" element={<LiveDashboard />} />
+          <Route path="/analytics" element={<UsageHistory />} />
+          <Route path="/devices" element={<SmartControl />} />
+          <Route path="/billing" element={<Invoices />} />
+          <Route path="/dashboard" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  </React.StrictMode>
+);

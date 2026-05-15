@@ -11,7 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useState } from "react";
-import { addDevice, getDevices, toggleDevice } from "../api";
+import { addDevice, getDevices, getUsageHistory, toggleDevice } from "../api";
 import { useAsync } from "../hooks";
 import { ErrorState, LoadingState } from "../ui/State";
 
@@ -20,6 +20,12 @@ const deviceIcons = {
   Mobility: BatteryCharging,
   Appliance: Shirt,
   Thermal: Thermometer,
+};
+
+const energyPeriods = {
+  week: "weekly",
+  month: "monthly",
+  year: "monthly",
 };
 
 export function SmartControl() {
@@ -35,6 +41,11 @@ export function SmartControl() {
   const [offTime, setOffTime] = useState("05:00");
   const [intensity, setIntensity] = useState(68);
   const [energyPeriod, setEnergyPeriod] = useState("week");
+  const {
+    data: energyData,
+    error: energyError,
+    loading: energyLoading,
+  } = useAsync(() => getUsageHistory(energyPeriods[energyPeriod]), [energyPeriod]);
   const [selectedRoom, setSelectedRoom] = useState("all");
   const [form, setForm] = useState({
     name: "",
@@ -95,33 +106,11 @@ export function SmartControl() {
   const activeLoad = (data ?? []).reduce((total, device) => total + (device.is_on ? device.power_kw : 0), 0);
   const focusIcon = selectedDevice ? deviceIcons[selectedDevice.type] ?? Power : Power;
   const FocusIcon = focusIcon;
-  const energyByPeriod = {
-    week: [
-      { label: "Mon", value: 58 },
-      { label: "Tue", value: 72 },
-      { label: "Wed", value: 46 },
-      { label: "Thu", value: 82 },
-      { label: "Fri", value: 64 },
-      { label: "Sat", value: 88 },
-      { label: "Sun", value: 61 },
-    ],
-    month: [
-      { label: "W1", value: 42 },
-      { label: "W2", value: 70 },
-      { label: "W3", value: 56 },
-      { label: "W4", value: 86 },
-      { label: "W5", value: 63 },
-    ],
-    year: [
-      { label: "Jan", value: 48 },
-      { label: "Feb", value: 62 },
-      { label: "Mar", value: 80 },
-      { label: "Apr", value: 54 },
-      { label: "May", value: 76 },
-      { label: "Jun", value: 68 },
-    ],
-  };
-  const energyBars = energyByPeriod[energyPeriod];
+  const energyBars = (energyData ?? []).map((item) => ({
+    label: item.label,
+    value: Math.max(0, item.grid_kwh + item.solar_kwh),
+  }));
+  const maxEnergyValue = Math.max(...energyBars.map((bar) => bar.value), 1);
 
   return (
     <section className="app-page smart-page">
@@ -254,15 +243,15 @@ export function SmartControl() {
           <div className="device-top-metrics">
             <article className="white-info-card dark">
               <span>Current Consumption</span>
-              <strong>{activeLoad.toFixed(1)} kWh</strong>
+              <strong>{activeLoad.toFixed(1)} kW</strong>
             </article>
             <article className="white-info-card">
-              <span>Humidity</span>
-              <strong>48.2%</strong>
+              <span>Devices On</span>
+              <strong>{devicesOn}</strong>
             </article>
             <article className="white-info-card">
-              <span>Temperature</span>
-              <strong>68 F</strong>
+              <span>Total Devices</span>
+              <strong>{data.length}</strong>
             </article>
           </div>
 
@@ -287,8 +276,8 @@ export function SmartControl() {
               </button>
               <div className="white-featured-stats">
                 <div>
-                  <strong>{selectedDevice.is_on ? "8H 40M" : "0H 00M"}</strong>
-                  <span>Time Usage</span>
+                  <strong>{selectedDevice.is_on ? "ON" : "OFF"}</strong>
+                  <span>Database Status</span>
                 </div>
                 <div>
                   <strong>{selectedDevice.power_kw.toFixed(1)} kW</strong>
@@ -338,13 +327,15 @@ export function SmartControl() {
                 ))}
               </div>
             </div>
+            {energyLoading && <p className="muted-footer">Loading graph data...</p>}
+            {energyError && <p className="muted-footer">{energyError}</p>}
             <div className="white-bar-chart">
               {energyBars.map((bar, index) => (
                 <div key={bar.label}>
                   <span
                     className={index === 3 ? "highlight" : ""}
-                    style={{ height: `${bar.value}%` }}
-                    title={`${bar.label}: ${bar.value}%`}
+                    style={{ height: `${Math.max(8, (bar.value / maxEnergyValue) * 100)}%` }}
+                    title={`${bar.label}: ${bar.value.toFixed(1)} kWh`}
                   />
                   <b>{bar.label}</b>
                 </div>

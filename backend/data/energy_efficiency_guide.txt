@@ -1,0 +1,19 @@
+VoltStream Energy Efficiency Reference Guide
+
+Solar energy:
+Solar energy is energy from sunlight that can be converted into electricity using solar panels or used as heat. In home energy systems, solar generation means the electricity produced by rooftop or ground-mounted panels during daylight hours.
+
+Solar panel placement:
+For maximum solar output in most fixed rooftop installations, panels should face true south in the northern hemisphere and true north in the southern hemisphere. The recommended panel tilt angle is usually close to the site's latitude. A practical adjustment is latitude minus 10 to 15 degrees in summer and latitude plus 10 to 15 degrees in winter. Keep panels clear of shade between 9 a.m. and 3 p.m. because shade on even a small part of the array can reduce total output.
+
+Home energy saving:
+The fastest low-cost savings usually come from reducing cooling and heating load, using LED lighting, sealing air leaks, and running high-power appliances during solar production hours. Set air conditioners to 24 to 26 degrees Celsius when comfort allows. Clean air filters monthly during heavy use. Use smart plugs or schedules to switch off standby loads such as entertainment systems, chargers, and desk equipment.
+
+Appliance operation:
+Water heaters, washing machines, dishwashers, and EV chargers are good candidates for load shifting. Running these devices during midday solar generation can reduce grid import. Refrigerators should not be switched off for savings, but their coils should be cleaned and the door gasket should seal properly.
+
+Battery and grid usage:
+If a home has a battery, reserve some capacity for evening peak hours. Charge from solar first when possible. Avoid deep daily discharge below the manufacturer's recommended limit because it can shorten battery life. If the tariff has time-of-use pricing, schedule flexible loads away from expensive evening periods.
+
+Monitoring:
+Review daily grid draw, solar generation, and net usage together. A high grid draw during bright midday hours can mean appliances are running outside solar availability, panels are shaded, or the inverter is limiting output. A sudden increase in night usage often points to standby loads, water heating, or inefficient cooling.

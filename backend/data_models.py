@@ -13,6 +13,7 @@ class LivePowerStatus(BaseModel):
     net_usage_kw: float
     battery_percent: int
     home_load_kw: float
+    savings_today: float
     updated_at: str
     live_series: list[LivePowerSample]
 
@@ -22,6 +23,17 @@ class EnergyDataPoint(BaseModel):
     grid_kwh: float
     solar_kwh: float
     net_kwh: float
+
+
+class BillingTrendPoint(BaseModel):
+    label: str
+    current_bill: float
+    projected_bill: float
+    savings: float
+
+
+class BillingLimitUpdate(BaseModel):
+    budget_limit: float
 
 
 class DeviceResponse(BaseModel):
@@ -45,3 +57,33 @@ class DeviceToggleResponse(BaseModel):
     id: str
     is_on: bool
     message: str
+
+
+class ChatRequest(BaseModel):
+    message: str
+
+
+class ChatResponse(BaseModel):
+    answer: str
+
+
+class QARequest(BaseModel):
+    question: str
+
+
+class SourceChunk(BaseModel):
+    source: str
+    chunk_id: str
+    text: str
+
+
+class QAResponse(BaseModel):
+    answer: str
+    sources: list[SourceChunk] = []
+
+
+class DocumentStatusResponse(BaseModel):
+    filename: str
+    chunk_count: int
+    is_default: bool
+

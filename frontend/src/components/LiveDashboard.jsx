@@ -1,4 +1,4 @@
-import { CircleDollarSign, Info, RefreshCw, Scale, SunMedium, UtilityPole } from "lucide-react";
+import { IndianRupee, Info, RefreshCw, Scale, SunMedium, UtilityPole } from "lucide-react";
 import {
   CartesianGrid,
   Legend,
@@ -48,15 +48,15 @@ export function LiveDashboard() {
       icon: Scale,
       colorClass: "purple",
     },
-    {
-      title: "Savings Today",
-      value: 1.35,
-      note: "vs. yesterday",
-      icon: CircleDollarSign,
-      colorClass: "green",
-      prefix: "$",
-      unit: "",
-    },
+   {
+  title: "Savings Today",
+  value: data.savings_today,
+  note: "Calculated from today's solar generation",
+  icon: IndianRupee,
+  colorClass: "green",
+  prefix: "",
+  unit: "",
+},
   ];
 
   return (

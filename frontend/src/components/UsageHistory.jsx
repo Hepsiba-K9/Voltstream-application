@@ -10,25 +10,10 @@ const periodLabels = {
   monthly: "12 months",
 };
 
-const monthlyHistory = [
-  { label: "Jan", grid_kwh: 118, solar_kwh: 154, net_kwh: -36 },
-  { label: "Feb", grid_kwh: 126, solar_kwh: 166, net_kwh: -40 },
-  { label: "Mar", grid_kwh: 132, solar_kwh: 184, net_kwh: -52 },
-  { label: "Apr", grid_kwh: 141, solar_kwh: 193, net_kwh: -52 },
-  { label: "May", grid_kwh: 148, solar_kwh: 205, net_kwh: -57 },
-  { label: "Jun", grid_kwh: 152, solar_kwh: 214, net_kwh: -62 },
-  { label: "Jul", grid_kwh: 158, solar_kwh: 221, net_kwh: -63 },
-  { label: "Aug", grid_kwh: 149, solar_kwh: 208, net_kwh: -59 },
-  { label: "Sep", grid_kwh: 142, solar_kwh: 194, net_kwh: -52 },
-  { label: "Oct", grid_kwh: 136, solar_kwh: 176, net_kwh: -40 },
-  { label: "Nov", grid_kwh: 128, solar_kwh: 162, net_kwh: -34 },
-  { label: "Dec", grid_kwh: 121, solar_kwh: 150, net_kwh: -29 },
-];
-
 export function UsageHistory() {
   const [period, setPeriod] = useState("daily");
   const { data, error, loading } = useAsync(() => getUsageHistory(period), [period]);
-  const chartData = period === "monthly" ? monthlyHistory : data ?? [];
+  const chartData = data ?? [];
   const totals = chartData.reduce(
     (summary, item) => ({
       grid: summary.grid + item.grid_kwh,

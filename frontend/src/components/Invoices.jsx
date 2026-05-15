@@ -1,6 +1,6 @@
 import { AlertTriangle, CalendarDays, Landmark, ReceiptText, WalletCards } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getBillingSummary } from "../api";
+import { getBillingSummary, getBillingTrend, updateBillingLimit } from "../api";
 import { useAsync } from "../hooks";
 import { ErrorState, LoadingState } from "../ui/State";
 
@@ -9,49 +9,34 @@ const currency = new Intl.NumberFormat("en-US", {
   currency: "INR",
 });
 
-const monthCostSeed = [68, 74, 82, 78, 95, 92, 104, 99, 88, 91, 108, 116];
-
-function buildBillingView(selectedDate) {
+function buildBillingPeriod(selectedDate) {
   const date = new Date(`${selectedDate}T00:00:00`);
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const selectedDay = date.getDate();
-  const lastDate = new Date(year, month + 1, 0).getDate();
   const longMonth = new Intl.DateTimeFormat("en-US", { month: "long" }).format(date);
   const selectedLabel = new Intl.DateTimeFormat("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
   }).format(date);
-  const trend = Array.from({ length: month + 1 }, (_, index) => {
-    const trendDate = new Date(year, index, 1);
-    const label = new Intl.DateTimeFormat("en-US", { month: "short" }).format(trendDate);
-    const seasonalAdjustment = year === 2026 ? 0 : (year - 2026) * 3;
-    const projected = Math.max(45, monthCostSeed[index] + seasonalAdjustment);
-
-    return {
-      label,
-      actual: index === month ? Math.round((projected * selectedDay) / lastDate) : projected,
-      projected,
-    };
-  });
-  const selectedMonthProjected = trend[trend.length - 1].projected;
-  const currentBalance = trend[trend.length - 1].actual;
 
   return {
-    currentBalance,
     period: `January 1 - ${selectedLabel}`,
-    projectedBill: selectedMonthProjected,
     selectedMonth: longMonth,
-    trend,
   };
 }
 
+function getTodayDateValue() {
+  const today = new Date();
+  const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 10);
+}
+
 export function Invoices() {
-  const { data, error, loading } = useAsync(getBillingSummary, []);
-  const [selectedDate, setSelectedDate] = useState("2026-05-06");
-  const [customLimit, setCustomLimit] = useState(() => localStorage.getItem("voltstream_budget_limit") ?? "");
-  const billingView = useMemo(() => buildBillingView(selectedDate), [selectedDate]);
+  const { data, error, loading, setData } = useAsync(getBillingSummary, []);
+  const { data: trendData, error: trendError, loading: trendLoading } = useAsync(getBillingTrend, []);
+  const [selectedDate, setSelectedDate] = useState(getTodayDateValue);
+  const [customLimit, setCustomLimit] = useState("");
+  const [limitStatus, setLimitStatus] = useState("");
+  const billingPeriod = useMemo(() => buildBillingPeriod(selectedDate), [selectedDate]);
 
   useEffect(() => {
     if (!customLimit && data?.budget_limit) {
@@ -59,23 +44,24 @@ export function Invoices() {
     }
   }, [customLimit, data?.budget_limit]);
 
-  if (loading) return <LoadingState />;
+  if (loading || trendLoading) return <LoadingState />;
   if (error || !data) return <ErrorState message={error ?? "Billing unavailable"} />;
+  if (trendError || !trendData) return <ErrorState message={trendError ?? "Billing trend unavailable"} />;
 
   const activeLimit = Number(customLimit) > 0 ? Number(customLimit) : data.budget_limit;
-  const overBudgetAmount = Math.max(0, billingView.projectedBill - activeLimit);
+  const overBudgetAmount = Math.max(0, data.projected_bill - activeLimit);
   const overBudgetPercent = Math.round((overBudgetAmount / activeLimit) * 100);
-  const budgetPercent = Math.min(100, Math.round((billingView.projectedBill / activeLimit) * 100));
-  const isOverBudget = billingView.projectedBill > activeLimit;
+  const budgetPercent = Math.min(100, Math.round((data.projected_bill / activeLimit) * 100));
+  const isOverBudget = data.projected_bill > activeLimit;
   const billingSeries = [
     {
       key: "current",
       label: "Current Bill",
       color: "blue",
       stroke: "#2563eb",
-      values: billingView.trend.map((item, index) => ({
+      values: trendData.map((item) => ({
         ...item,
-        value: Math.max(20, item.actual + [0, 6, -4, 8, -5, 7, -3, 5, -6, 4, -2, 6][index % 12]),
+        value: item.current_bill,
       })),
     },
     {
@@ -83,9 +69,9 @@ export function Invoices() {
       label: "Savings",
       color: "green",
       stroke: "#16a34a",
-      values: billingView.trend.map((item, index) => ({
+      values: trendData.map((item) => ({
         ...item,
-        value: Math.max(10, activeLimit - item.actual + [34, 16, 28, 12, 38, 20, 30, 14, 26, 18, 24, 15][index % 12]),
+        value: item.savings,
       })),
     },
     {
@@ -93,30 +79,30 @@ export function Invoices() {
       label: "Projected Bill",
       color: "orange",
       stroke: "#ea580c",
-      values: billingView.trend.map((item, index) => ({
+      values: trendData.map((item) => ({
         ...item,
-        value: Math.max(25, item.projected + [-12, 16, -8, 22, 0, 18, -6, 26, 4, 20, -10, 24][index % 12]),
+        value: item.projected_bill,
       })),
     },
   ];
   const chartMax = Math.max(
     activeLimit,
-    ...billingView.trend.map((item) => Math.max(item.projected, item.actual)),
+    ...trendData.map((item) => Math.max(item.projected_bill, item.current_bill, item.savings)),
     ...billingSeries.flatMap((line) => line.values.map((item) => item.value)),
     1
   );
   const billingCards = [
     {
       label: "Current Balance",
-      value: currency.format(billingView.currentBalance),
+      value: currency.format(data.current_balance),
       note: `As of selected date`,
       icon: WalletCards,
       color: "green",
     },
     {
       label: "Projected Bill",
-      value: currency.format(billingView.projectedBill),
-      note: `For ${billingView.selectedMonth}`,
+      value: currency.format(data.projected_bill),
+      note: `For ${billingPeriod.selectedMonth}`,
       icon: ReceiptText,
       color: "orange",
     },
@@ -129,12 +115,19 @@ export function Invoices() {
     },
   ];
 
-  function handleLimitChange(value) {
+  async function handleLimitChange(value) {
     setCustomLimit(value);
-    if (Number(value) > 0) {
-      localStorage.setItem("voltstream_budget_limit", value);
-    } else {
-      localStorage.removeItem("voltstream_budget_limit");
+    setLimitStatus("");
+    const nextLimit = Number(value);
+    if (!Number.isFinite(nextLimit) || nextLimit <= 0) {
+      return;
+    }
+
+    try {
+      const updatedSummary = await updateBillingLimit(nextLimit);
+      setData(updatedSummary);
+    } catch (err) {
+      setLimitStatus(err instanceof Error ? err.message : "Could not save budget limit.");
     }
   }
 
@@ -147,7 +140,7 @@ export function Invoices() {
         </div>
         <div className="period-chip">
           <CalendarDays size={16} />
-          <span>Billing Period: {billingView.period}</span>
+          <span>Billing Period: {billingPeriod.period}</span>
         </div>
       </header>
 
@@ -167,7 +160,8 @@ export function Invoices() {
             placeholder="120"
           />
         </label>
-        <p>Showing billing data for {new Date(`${selectedDate}T00:00:00`).getFullYear()} up to {billingView.selectedMonth}.</p>
+        <p>Showing billing data for {new Date(`${selectedDate}T00:00:00`).getFullYear()} up to {billingPeriod.selectedMonth}.</p>
+        {limitStatus && <p className="form-status error">{limitStatus}</p>}
       </div>
 
       <div className="billing-card-grid">
@@ -203,7 +197,7 @@ export function Invoices() {
           <p>{budgetPercent}% of your custom monthly limit is projected to be used.</p>
         </div>
         <div className="budget-progress-meta">
-          <strong>{currency.format(billingView.projectedBill)}</strong>
+          <strong>{currency.format(data.projected_bill)}</strong>
           <span>of {currency.format(activeLimit)}</span>
         </div>
         <div className="budget-progress-track" aria-label={`Budget progress ${budgetPercent}%`}>
@@ -230,7 +224,7 @@ export function Invoices() {
             <span>{currency.format(0)}</span>
           </div>
           <div className="billing-monthly-combo-plot">
-            {billingView.trend.map((item) => (
+            {trendData.map((item) => (
               <div className="billing-month-group" key={item.label}>
                 <div className="billing-month-bars">
                   {billingSeries.map((series) => {

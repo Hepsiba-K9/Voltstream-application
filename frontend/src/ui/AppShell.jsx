@@ -1,17 +1,20 @@
 import {
   BarChart3,
+  Bot,
   FileText,
   Home,
   ToggleLeft,
   Zap,
 } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
+import { FloatingAssistant } from "../components/FloatingAssistant";
 
 const links = [
   { to: "/", label: "Dashboard", icon: Home },
   { to: "/analytics", label: "Analytics", icon: BarChart3 },
   { to: "/devices", label: "Devices", icon: ToggleLeft },
   { to: "/billing", label: "Billing", icon: FileText },
+  { to: "/assistant", label: "VoltSenseBot", icon: Bot },
 ];
 
 export function AppShell() {
@@ -59,6 +62,8 @@ export function AppShell() {
       <main className="content">
         <Outlet />
       </main>
+
+      <FloatingAssistant />
     </div>
   );
 }

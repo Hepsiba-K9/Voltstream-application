@@ -1,5 +1,17 @@
 node_modules/
 frontend/node_modules/
+venv/
+__pycache__/
+*.py[cod]
 .env
+.env.*
+!.env.example
+backend/chroma_store/
+backend/databases/
+backend/data/*.sqlite3
+backend/data/*.sqlite3-*
+backend/data/uploads/
+backend/data/active_document.txt
+chroma_store/
 dist/
 build/

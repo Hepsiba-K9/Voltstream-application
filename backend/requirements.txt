@@ -4,5 +4,6 @@ pydantic==2.10.4
 python-multipart==0.0.20
 python-dotenv==1.0.1
 google-generativeai==0.8.3
+google-adk
 chromadb==0.5.23
 pypdf==5.1.0

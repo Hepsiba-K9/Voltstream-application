@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { AIAssistant } from "./components/AIAssistant";
+import { DeviceAgent } from "./components/DeviceAgent";
 import { Invoices } from "./components/Invoices";
 import { LiveDashboard } from "./components/LiveDashboard";
 import { NotFound } from "./components/NotFound";
@@ -22,6 +23,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Route path="/assistant" element={<Navigate to="/assistant/chat" replace />} />
           <Route path="/assistant/chat" element={<AIAssistant routeMode="chat" />} />
           <Route path="/assistant/qa" element={<AIAssistant routeMode="qa" />} />
+          <Route path="/agent" element={<DeviceAgent />} />
           <Route path="/dashboard" element={<Navigate to="/" replace />} />
           <Route path="*" element={<NotFound />} />
         </Route>

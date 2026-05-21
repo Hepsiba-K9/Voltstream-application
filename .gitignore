@@ -3,9 +3,12 @@ frontend/node_modules/
 venv/
 __pycache__/
 *.py[cod]
+*.log
+*.out.log
 .env
 .env.*
 !.env.example
+~$*
 backend/chroma_store/
 backend/databases/
 backend/data/*.sqlite3

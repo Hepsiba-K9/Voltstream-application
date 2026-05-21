@@ -5,7 +5,7 @@ const AI_TIMEOUT_MS = 90000;
 async function request(path, options = {}) {
   const controller = new AbortController();
   const externalSignal = options.signal;
-  const timeoutMs = path === "/api/v1/chat" || path === "/api/v1/qa"
+  const timeoutMs = path === "/api/v1/chat" || path === "/api/v1/qa" || path === "/api/v1/agent"
       ? AI_TIMEOUT_MS
       : REQUEST_TIMEOUT_MS;
   const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
@@ -87,6 +87,15 @@ export function sendChatMessage(message, signal) {
   });
 }
 
+export function sendAgentMessage(message, signal) {
+  return request("/api/v1/agent", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message }),
+    signal,
+  });
+}
+
 export function askDocumentQuestion(question, signal) {
   return request("/api/v1/qa", {
     method: "POST",
@@ -94,8 +103,4 @@ export function askDocumentQuestion(question, signal) {
     body: JSON.stringify({ question }),
     signal,
   });
-}
-
-export function getDocumentStatus() {
-  return request("/api/v1/qa/document");
 }

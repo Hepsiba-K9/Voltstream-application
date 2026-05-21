@@ -153,6 +153,19 @@ def get_devices() -> list[DeviceResponse]:
     return [_device_from_row(row) for row in rows]
 
 
+def get_device(device_id: str) -> DeviceResponse | None:
+    ensure_database()
+    with connect() as connection:
+        row = connection.execute(
+            "SELECT id, name, room, type, is_on, power_kw FROM devices WHERE id = ?",
+            (device_id,),
+        ).fetchone()
+
+    if row is None:
+        return None
+    return _device_from_row(row)
+
+
 def create_device(device: DeviceCreate) -> DeviceResponse:
     ensure_database()
     with connect() as connection:
@@ -197,6 +210,31 @@ def toggle_device(device_id: str) -> DeviceResponse | None:
             (int(updated.is_on), updated.power_kw, device_id),
         )
         return updated
+
+
+def set_device_state(device_id: str, state: bool) -> DeviceResponse | None:
+    ensure_database()
+    with connect() as connection:
+        row = connection.execute(
+            "SELECT id, name, room, type, is_on, power_kw FROM devices WHERE id = ?",
+            (device_id,),
+        ).fetchone()
+        if row is None:
+            return None
+
+        device = _device_from_row(row)
+        next_power_kw = device.power_kw
+        if not state:
+            next_power_kw = 0.0
+        elif next_power_kw == 0:
+            next_power_kw = 0.9
+
+        connection.execute(
+            "UPDATE devices SET is_on = ?, power_kw = ? WHERE id = ?",
+            (int(state), next_power_kw, device_id),
+        )
+
+    return get_device(device_id)
 
 
 def get_billing_summary() -> dict[str, float | int | str]:

@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Bot,
+  Cpu,
   FileText,
   Home,
   ToggleLeft,
@@ -15,6 +16,7 @@ const links = [
   { to: "/devices", label: "Devices", icon: ToggleLeft },
   { to: "/billing", label: "Billing", icon: FileText },
   { to: "/assistant", label: "VoltSenseBot", icon: Bot },
+  { to: "/agent", label: "Volt Agent", icon: Cpu },
 ];
 
 export function AppShell() {

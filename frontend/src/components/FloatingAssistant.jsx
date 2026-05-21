@@ -28,7 +28,7 @@ export function FloatingAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-  if (location.pathname.startsWith("/assistant")) {
+  if (location.pathname.startsWith("/assistant") || location.pathname.startsWith("/agent")) {
     return null;
   }
 

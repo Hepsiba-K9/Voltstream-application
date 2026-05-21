@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class LivePowerSample(BaseModel):
@@ -59,6 +59,25 @@ class DeviceToggleResponse(BaseModel):
     message: str
 
 
+class AgentRequest(BaseModel):
+    message: str
+    user_id: str = "voltstream-user"
+    session_id: str = "voltstream-session"
+
+
+class AgentToolCall(BaseModel):
+    tool: str
+    args: dict[str, str | bool | float]
+    result: dict[str, str | bool | float | None]
+
+
+class AgentResponse(BaseModel):
+    answer: str
+    device: DeviceResponse | None = None
+    tool_calls: list[AgentToolCall] = Field(default_factory=list)
+    agent_loop: list[str] = Field(default_factory=list)
+
+
 class ChatRequest(BaseModel):
     message: str
 
@@ -86,4 +105,3 @@ class DocumentStatusResponse(BaseModel):
     filename: str
     chunk_count: int
     is_default: bool
-

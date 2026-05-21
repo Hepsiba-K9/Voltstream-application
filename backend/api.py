@@ -11,7 +11,11 @@ from ai_service import (
     get_document_status,
     upload_chat_document_to_memory,
 )
+from agent_service import run_device_agent
 from data_models import (
+    AgentRequest,
+    AgentResponse,
+    AgentToolCall,
     BillingLimitUpdate,
     BillingTrendPoint,
     ChatRequest,
@@ -101,6 +105,21 @@ def update_billing_summary(update: BillingLimitUpdate) -> dict[str, float | int 
 @router.get("/api/v1/billing/trend", response_model=list[BillingTrendPoint])
 def get_billing_trend() -> list[BillingTrendPoint]:
     return fetch_billing_trend()
+
+
+@router.post("/api/v1/agent", response_model=AgentResponse)
+async def device_agent(request: AgentRequest) -> AgentResponse:
+    message = request.message.strip()
+    if not message:
+        raise HTTPException(status_code=400, detail="Message is required")
+
+    result = await run_device_agent(message, request.user_id, request.session_id)
+    return AgentResponse(
+        answer=result["answer"],
+        device=result["device"],
+        tool_calls=[AgentToolCall(**tool_call) for tool_call in result["tool_calls"]],
+        agent_loop=result["agent_loop"],
+    )
 
 
 @router.post("/api/v1/chat", response_model=ChatResponse)

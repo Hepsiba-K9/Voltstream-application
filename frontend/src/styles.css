@@ -1516,6 +1516,54 @@ h2 {
   cursor: not-allowed;
 }
 
+.agent-badge {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.agent-layout {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
+}
+
+.agent-console {
+  grid-template-rows: minmax(520px, 62vh) auto;
+}
+
+.agent-welcome {
+  background:
+    radial-gradient(circle at 10% 18%, rgb(22 163 74 / 12%) 1px, transparent 2px) 0 0 / 18px 18px,
+    linear-gradient(160deg, rgb(240 253 244 / 86%), rgb(255 255 255 / 65) 42%, rgb(239 246 255 / 72));
+}
+
+.agent-welcome-mark {
+  border-color: #bbf7d0;
+  box-shadow: 0 16px 34px rgb(22 163 74 / 14%);
+  color: #15803d;
+}
+
+.agent-robot-image {
+  display: block;
+  height: clamp(150px, 22vw, 250px);
+  object-fit: contain;
+  width: clamp(150px, 22vw, 250px);
+}
+
+.agent-prompt-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.agent-chat-console {
+  grid-template-rows: minmax(450px, 56vh) auto;
+}
+
+.agent-chat-console .assistant-welcome {
+  gap: 14px;
+  padding: 24px;
+}
+
 .floating-assistant {
   bottom: 22px;
   left: calc(220px + ((100vw - 220px) / 2));
@@ -1611,7 +1659,7 @@ h2 {
 .floating-assistant-form {
   align-items: center;
   background: #ffffff;
-  border: 1px solid #ee4508;
+  border: 1px solid #08ee1b;
   border-radius: 8px;
   box-shadow: 0 14px 34px rgb(15 23 42 / 14%);
   display: grid;
@@ -1622,7 +1670,7 @@ h2 {
 }
 
 .floating-assistant-form > svg {
-  color: #df100c;
+  color: #10df0c;
 }
 
 .floating-assistant-form input {
@@ -1678,7 +1726,7 @@ h2 {
   }
 
   .nav-links {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .nav-link {
@@ -4053,6 +4101,11 @@ h2 {
   }
 
   .assistant-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .agent-layout,
+  .agent-prompt-grid {
     grid-template-columns: 1fr;
   }
 

@@ -19,6 +19,16 @@ DATABASE_PATH = Path(
 )
 _INITIALIZED_DATABASES: set[Path] = set()
 
+DEVICE_POWER_DEFAULTS = {
+    "aircooler": 1.2,
+    "ceilingfan": 0.08,
+    "charger": 7.2,
+    "hvac": 3.4,
+    "offan": 0.08,
+    "washer": 0.6,
+    "heater": 4.5,
+}
+
 
 @contextmanager
 def connect() -> Iterator[sqlite3.Connection]:
@@ -145,6 +155,7 @@ def get_usage_history(period: Literal["daily", "weekly", "monthly"]) -> list[Ene
 
 def get_devices() -> list[DeviceResponse]:
     ensure_database()
+    normalize_device_power_defaults()
     with connect() as connection:
         rows = connection.execute(
             "SELECT id, name, room, type, is_on, power_kw FROM devices ORDER BY name"
@@ -203,7 +214,7 @@ def toggle_device(device_id: str) -> DeviceResponse | None:
         if not updated.is_on:
             updated = updated.model_copy(update={"power_kw": 0.0})
         elif updated.power_kw == 0:
-            updated = updated.model_copy(update={"power_kw": 0.9})
+            updated = updated.model_copy(update={"power_kw": _default_power_kw(device)})
 
         connection.execute(
             "UPDATE devices SET is_on = ?, power_kw = ? WHERE id = ?",
@@ -227,7 +238,7 @@ def set_device_state(device_id: str, state: bool) -> DeviceResponse | None:
         if not state:
             next_power_kw = 0.0
         elif next_power_kw == 0:
-            next_power_kw = 0.9
+            next_power_kw = _default_power_kw(device)
 
         connection.execute(
             "UPDATE devices SET is_on = ?, power_kw = ? WHERE id = ?",
@@ -272,6 +283,21 @@ def update_billing_limit(budget_limit: float) -> dict[str, float | int | str]:
     return get_billing_summary()
 
 
+def normalize_device_power_defaults() -> None:
+    ensure_database()
+    with connect() as connection:
+        rows = connection.execute(
+            "SELECT id, name, room, type, is_on, power_kw FROM devices"
+        ).fetchall()
+        for row in rows:
+            device = _device_from_row(row)
+            if device.is_on and device.power_kw in {0.0, 0.9}:
+                connection.execute(
+                    "UPDATE devices SET power_kw = ? WHERE id = ?",
+                    (_default_power_kw(device), device.id),
+                )
+
+
 def get_billing_trend() -> list[BillingTrendPoint]:
     ensure_database()
     with connect() as connection:
@@ -298,6 +324,26 @@ def _next_device_id(connection: sqlite3.Connection, name: str) -> str:
 
 def _device_exists(connection: sqlite3.Connection, device_id: str) -> bool:
     return connection.execute("SELECT 1 FROM devices WHERE id = ?", (device_id,)).fetchone() is not None
+
+
+def _default_power_kw(device: DeviceResponse) -> float:
+    if device.id in DEVICE_POWER_DEFAULTS:
+        return DEVICE_POWER_DEFAULTS[device.id]
+
+    normalized = f"{device.name} {device.type}".lower()
+    if any(term in normalized for term in ["hvac", "air conditioner", "ac"]):
+        return 3.4
+    if any(term in normalized for term in ["cooler"]):
+        return 1.2
+    if any(term in normalized for term in ["fan"]):
+        return 0.08
+    if any(term in normalized for term in ["charger", "ev"]):
+        return 7.2
+    if any(term in normalized for term in ["heater", "geyser"]):
+        return 4.5
+    if any(term in normalized for term in ["washer", "washing"]):
+        return 0.6
+    return 0.8
 
 
 def _device_from_row(row: sqlite3.Row) -> DeviceResponse:

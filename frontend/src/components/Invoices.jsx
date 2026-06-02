@@ -30,6 +30,33 @@ function getTodayDateValue() {
   return localDate.toISOString().slice(0, 10);
 }
 
+function buildSelectedBillingSummary(selectedDate, trendData, fallbackSummary) {
+  const date = new Date(`${selectedDate}T00:00:00`);
+  const monthIndex = date.getMonth();
+  const dayOfMonth = date.getDate();
+  const daysInMonth = new Date(date.getFullYear(), monthIndex + 1, 0).getDate();
+  const monthProgress = Math.min(1, Math.max(0, dayOfMonth / daysInMonth));
+  const selectedMonth = trendData[monthIndex] ?? trendData.at(-1);
+
+  if (!selectedMonth) {
+    return fallbackSummary;
+  }
+
+  const previousBalance = trendData
+    .slice(0, monthIndex)
+    .reduce((total, item) => total + item.current_bill, 0);
+  const currentMonthBalance = selectedMonth.current_bill * monthProgress;
+
+  return {
+    ...fallbackSummary,
+    current_balance: Number((previousBalance + currentMonthBalance).toFixed(2)),
+    projected_bill: Number(selectedMonth.projected_bill.toFixed(2)),
+    solar_credit: Number(selectedMonth.savings.toFixed(2)),
+    billing_cycle: selectedMonth.label,
+    days_remaining: Math.max(0, daysInMonth - dayOfMonth),
+  };
+}
+
 export function Invoices() {
   const { data, error, loading, setData } = useAsync(getBillingSummary, []);
   const { data: trendData, error: trendError, loading: trendLoading } = useAsync(getBillingTrend, []);
@@ -48,11 +75,12 @@ export function Invoices() {
   if (error || !data) return <ErrorState message={error ?? "Billing unavailable"} />;
   if (trendError || !trendData) return <ErrorState message={trendError ?? "Billing trend unavailable"} />;
 
+  const selectedSummary = buildSelectedBillingSummary(selectedDate, trendData, data);
   const activeLimit = Number(customLimit) > 0 ? Number(customLimit) : data.budget_limit;
-  const overBudgetAmount = Math.max(0, data.projected_bill - activeLimit);
+  const overBudgetAmount = Math.max(0, selectedSummary.projected_bill - activeLimit);
   const overBudgetPercent = Math.round((overBudgetAmount / activeLimit) * 100);
-  const budgetPercent = Math.min(100, Math.round((data.projected_bill / activeLimit) * 100));
-  const isOverBudget = data.projected_bill > activeLimit;
+  const budgetPercent = Math.min(100, Math.round((selectedSummary.projected_bill / activeLimit) * 100));
+  const isOverBudget = selectedSummary.projected_bill > activeLimit;
   const billingSeries = [
     {
       key: "current",
@@ -94,14 +122,14 @@ export function Invoices() {
   const billingCards = [
     {
       label: "Current Balance",
-      value: currency.format(data.current_balance),
+      value: currency.format(selectedSummary.current_balance),
       note: `As of selected date`,
       icon: WalletCards,
       color: "green",
     },
     {
       label: "Projected Bill",
-      value: currency.format(data.projected_bill),
+      value: currency.format(selectedSummary.projected_bill),
       note: `For ${billingPeriod.selectedMonth}`,
       icon: ReceiptText,
       color: "orange",
@@ -197,7 +225,7 @@ export function Invoices() {
           <p>{budgetPercent}% of your custom monthly limit is projected to be used.</p>
         </div>
         <div className="budget-progress-meta">
-          <strong>{currency.format(data.projected_bill)}</strong>
+          <strong>{currency.format(selectedSummary.projected_bill)}</strong>
           <span>of {currency.format(activeLimit)}</span>
         </div>
         <div className="budget-progress-track" aria-label={`Budget progress ${budgetPercent}%`}>

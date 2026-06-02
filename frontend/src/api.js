@@ -87,11 +87,11 @@ export function sendChatMessage(message, signal) {
   });
 }
 
-export function sendAgentMessage(message, signal) {
+export function sendAgentMessage(message, signal, agentType = "device") {
   return request("/api/v1/agent", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, agent_type: agentType }),
     signal,
   });
 }

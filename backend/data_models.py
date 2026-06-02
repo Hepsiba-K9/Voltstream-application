@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import Literal
 
 
 class LivePowerSample(BaseModel):
@@ -61,6 +62,7 @@ class DeviceToggleResponse(BaseModel):
 
 class AgentRequest(BaseModel):
     message: str
+    agent_type: Literal["device", "energy"] = "device"
     user_id: str = "voltstream-user"
     session_id: str = "voltstream-session"
 

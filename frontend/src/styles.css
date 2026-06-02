@@ -1564,6 +1564,76 @@ h2 {
   padding: 24px;
 }
 
+.agent-trace {
+  background: #fff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 12px;
+}
+
+.agent-trace-title {
+  align-items: center;
+  color: #12305f;
+  display: flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.agent-loop-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.agent-loop-list li {
+  align-items: start;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 24px minmax(0, 1fr);
+}
+
+.agent-loop-list li > span {
+  align-items: center;
+  background: #e0f2fe;
+  border-radius: 50%;
+  color: #075985;
+  display: inline-flex;
+  font-size: 0.74rem;
+  height: 24px;
+  justify-content: center;
+  width: 24px;
+}
+
+.agent-loop-list p,
+.agent-tool-step p {
+  color: #334155;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.agent-tool-trace {
+  border-top: 1px solid #e2e8f0;
+  display: grid;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.agent-tool-step {
+  align-items: start;
+  color: #15803d;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 18px minmax(0, 1fr);
+}
+
 .floating-assistant {
   bottom: 22px;
   left: calc(220px + ((100vw - 220px) / 2));

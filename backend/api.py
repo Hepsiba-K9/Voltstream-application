@@ -11,7 +11,7 @@ from ai_service import (
     get_document_status,
     upload_chat_document_to_memory,
 )
-from agent_service import run_device_agent
+from agents import run_device_agent, run_energy_usage_agent
 from data_models import (
     AgentRequest,
     AgentResponse,
@@ -113,7 +113,10 @@ async def device_agent(request: AgentRequest) -> AgentResponse:
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
 
-    result = await run_device_agent(message, request.user_id, request.session_id)
+    if request.agent_type == "energy":
+        result = run_energy_usage_agent(message)
+    else:
+        result = await run_device_agent(message, request.user_id, request.session_id)
     return AgentResponse(
         answer=result["answer"],
         device=result["device"],

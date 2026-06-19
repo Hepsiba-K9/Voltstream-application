@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-import hashlib
 import json
-import math
 import sqlite3
 from pathlib import Path
 
@@ -10,13 +8,15 @@ from ai_services.ai_common import (
     AIServiceError,
     CHROMA_DIR,
     COLLECTION_NAME,
-    EMBEDDING_DIMENSIONS,
+    EMBEDDING_MODEL,
     EMBEDDING_EXPORT_TABLE,
     INDEX_META_FILE,
+    configure_google_ai_client,
 )
 from ai_services.document_loader import existing_reference_documents, load_document_text
-from ai_services.text_analysis import extract_keywords, is_definition_question
 from ai_services.text_chunker import chunk_text
+
+EMBEDDING_BATCH_SIZE = 50
 
 try:
     import chromadb
@@ -56,7 +56,7 @@ def ensure_document_index() -> None:
     if not documents:
         raise AIServiceError("No text was found in the selected document.")
 
-    embeddings = [embed_text(chunk) for chunk in documents]
+    embeddings = embed_texts(documents, task_type="RETRIEVAL_DOCUMENT")
     collection.add(
         ids=ids,
         documents=documents,
@@ -86,31 +86,39 @@ def get_document_status() -> dict[str, str | int | bool]:
 def query_document(question: str) -> list[dict[str, str]]:
     ensure_document_index()
     collection = get_collection()
-    if is_definition_question(question):
-        return stored_chunks(collection)
 
-    result_count = min(collection.count(), 8 if is_definition_question(question) else 3)
+    requested_count = 3
+    result_count = min(collection.count(), 30)
     if result_count == 0:
         return []
 
     results = collection.query(
-        query_embeddings=[embed_text(question)],
-        n_results=result_count,
+        query_embeddings=[embed_text(question, task_type="RETRIEVAL_QUERY")],
+        n_results=requested_count,
+        include=["documents", "metadatas", "distances"],
     )
-    documents = results.get("documents", [[]])[0]
-    metadatas = results.get("metadatas", [[]])[0]
+    documents = list(results.get("documents", [[]])[0])
+    metadatas = list(results.get("metadatas", [[]])[0])
+    distances = list(results.get("distances", [[]])[0])
 
     chunks: list[dict[str, str]] = []
     for index, text in enumerate(documents):
         metadata = metadatas[index] if index < len(metadatas) else {}
-        chunks.append(
-            {
-                "source": str(metadata.get("source", "reference-document")),
-                "chunk_id": str(metadata.get("chunk_id", f"chunk-{index + 1}")),
-                "text": text,
-            }
-        )
+        chunk_id = str(metadata.get("chunk_id", f"chunk-{index + 1}"))
+        chunks.append({
+            "source": str(metadata.get("source", "reference-document")),
+            "chunk_id": chunk_id,
+            "score": format_similarity_score(distances[index] if index < len(distances) else None),
+            "text": text,
+        })
     return chunks
+
+
+def format_similarity_score(distance: float | None) -> str:
+    if distance is None:
+        return ""
+    similarity = 1 / (1 + max(float(distance), 0.0))
+    return f"{similarity:.3f}"
 
 
 def get_collection():
@@ -222,18 +230,37 @@ def stored_chunks(collection) -> list[dict[str, str]]:
     return chunks
 
 
-def embed_text(text: str) -> list[float]:
-    vector = [0.0] * EMBEDDING_DIMENSIONS
-    for token in extract_keywords(text):
-        digest = hashlib.sha256(token.encode("utf-8")).digest()
-        index = int.from_bytes(digest[:4], "big") % EMBEDDING_DIMENSIONS
-        sign = 1.0 if digest[4] % 2 == 0 else -1.0
-        vector[index] += sign
+def embed_text(text: str, task_type: str = "RETRIEVAL_DOCUMENT") -> list[float]:
+    return embed_texts([text], task_type=task_type)[0]
 
-    magnitude = math.sqrt(sum(value * value for value in vector))
-    if magnitude == 0:
-        return vector
-    return [value / magnitude for value in vector]
+
+def embed_texts(texts: list[str], task_type: str = "RETRIEVAL_DOCUMENT") -> list[list[float]]:
+    if not texts:
+        return []
+
+    try:
+        from google.genai import types
+    except ImportError as exc:  # pragma: no cover - handled at runtime for setup clarity
+        raise AIServiceError("google-genai is not installed. Run pip install -r backend/requirements.txt.") from exc
+
+    client = configure_google_ai_client()
+    vectors: list[list[float]] = []
+    try:
+        for start in range(0, len(texts), EMBEDDING_BATCH_SIZE):
+            batch = texts[start:start + EMBEDDING_BATCH_SIZE]
+            response = client.models.embed_content(
+                model=EMBEDDING_MODEL,
+                contents=batch,
+                config=types.EmbedContentConfig(taskType=task_type),
+            )
+            embeddings = getattr(response, "embeddings", None) or []
+            vectors.extend(list(embedding.values or []) for embedding in embeddings)
+    except Exception as exc:
+        raise AIServiceError(str(exc)) from exc
+
+    if len(vectors) != len(texts) or any(not vector for vector in vectors):
+        raise AIServiceError("Gemini embedding request returned an invalid response.")
+    return vectors
 
 
 def document_signature(path: Path) -> dict[str, str | int]:
@@ -261,6 +288,7 @@ def write_index_meta(paths: list[Path], chunk_count: int) -> None:
             {
                 "documents": [document_signature(path) for path in paths],
                 "chunk_count": chunk_count,
+                "embedding_model": EMBEDDING_MODEL,
             },
             indent=2,
         ),
@@ -270,4 +298,7 @@ def write_index_meta(paths: list[Path], chunk_count: int) -> None:
 
 def index_matches_documents(paths: list[Path]) -> bool:
     meta = read_index_meta()
-    return meta.get("documents") == [document_signature(path) for path in paths]
+    return (
+        meta.get("documents") == [document_signature(path) for path in paths]
+        and meta.get("embedding_model") == EMBEDDING_MODEL
+    )

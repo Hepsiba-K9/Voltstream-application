@@ -8,11 +8,17 @@ This build includes the VoltStream frontend and FastAPI backend:
 - Usage analytics
 - Smart device controls
 - Billing summary
-- Gemini energy chat
+- Vertex AI Gemini energy chat
 - ChromaDB-backed grounded document Q&A
 - 404 fallback
 
-## Gemini Setup
+## Deployed Links
+
+- Frontend: https://voltstream-project-95144.web.app
+- Backend: https://voltstream-backend-335699237868.us-central1.run.app
+- Backend health check: https://voltstream-backend-335699237868.us-central1.run.app/health
+
+## Vertex AI Gemini Setup
 
 Create a project-root `.env` file before using the assistant:
 
@@ -20,12 +26,25 @@ Create a project-root `.env` file before using the assistant:
 Copy-Item .env.example .env
 ```
 
-Then edit `.env` and replace `your_gemini_api_key_here` with your Gemini API key.
+Then edit `.env` with your Google Cloud project and local credentials path:
+
+```env
+GOOGLE_GENAI_USE_VERTEXAI=true
+GOOGLE_CLOUD_PROJECT=voltstreamapp
+GOOGLE_CLOUD_LOCATION=us-central1
+GOOGLE_APPLICATION_CREDENTIALS=C:\path\to\service-account.json
+GEMINI_MODEL=gemini-2.5-flash
+```
+
+Do not commit service account JSON files. If a key has been shared or pasted anywhere, delete that key in Google Cloud IAM and create a new one before using it.
+
 The default chat model is:
 
 ```env
-GEMINI_MODEL=models/gemini-2.5-flash
+GEMINI_MODEL=gemini-2.5-flash
 ```
+
+For local Gemini API-key development, you can instead set `GEMINI_API_KEY`, but Vertex AI is the preferred setup for this app.
 
 ## Run Backend
 
@@ -50,23 +69,23 @@ The frontend dev server proxies API calls to `http://localhost:8000`.
 Open the app at `http://localhost:5175`.
 
 Frontend stack: ReactJS, React Router, Tailwind CSS, Recharts, and Lucide React.
-Backend stack: FastAPI, Uvicorn, Pydantic, ChromaDB, Gemini, and CORS middleware.
+Backend stack: FastAPI, Uvicorn, Pydantic, ChromaDB, Vertex AI Gemini, and CORS middleware.
 
 Backend layout:
 
 - `backend/main.py` creates the FastAPI app.
 - `backend/api.py` contains all API endpoints.
 - `backend/ai_service.py` contains Gemini chat and document Q&A logic.
-- `backend/database.py` creates tables, reads data, and writes new data in the local SQLite database.
+- `backend/database.py` creates tables, reads data, and writes new data through SQLite locally or Cloud SQL MySQL in deployment.
 - `backend/data_models.py` contains Pydantic response models.
 - `backend/data/energy_efficiency_guide.txt`, `backend/data/energy_efficiency_report.txt`, and `backend/data/detailed_energy_efficiency_report.txt` are the included Q&A reference documents.
 
-SQLite storage:
+Database storage:
 
-- Runtime data is stored in `backend/databases/voltstream.sqlite3` by default.
-- Set `VOLTSTREAM_DB_PATH` in `.env` to use a different database file.
-- Dashboard, usage history, devices, and billing data are read from SQLite. New device and billing updates are written back to SQLite.
-- The React frontend does not open SQLite directly. It calls FastAPI endpoints, and FastAPI reads/analyzes the SQLite data for cards and graphs.
+- Local runtime data is stored in `backend/databases/voltstream.sqlite3` by default.
+- Cloud deployment uses Cloud SQL MySQL when `DATABASE_ENGINE=mysql` and Cloud SQL environment variables are set.
+- Dashboard, usage history, devices, and billing data are read through FastAPI. New device and billing updates are written back to the configured database.
+- The React frontend does not open the database directly. It calls FastAPI endpoints, and FastAPI reads/analyzes the database data for cards and graphs.
 
 Assistant endpoints:
 

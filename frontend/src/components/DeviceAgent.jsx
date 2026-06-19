@@ -1,6 +1,4 @@
 import {
-  Activity,
-  ArrowRight,
   Cpu,
   LineChart,
   Send,
@@ -30,8 +28,19 @@ const modeContent = {
 };
 
 function formatAgentError(error) {
+  if (
+    error.status === 429 ||
+    error.message.includes("Gemini quota is exhausted") ||
+    error.message.includes("RESOURCE_EXHAUSTED") ||
+    error.message.includes("429")
+  ) {
+    return "Gemini quota is exhausted right now. Please wait a few minutes, then try again.";
+  }
   if (error.message.includes("Backend unavailable")) {
     return "Backend unavailable. Run start_backend.bat from the project folder and keep that window open.";
+  }
+  if (error.message.includes("non-JSON response")) {
+    return "Backend route is misconfigured. Rebuild and redeploy the frontend with the backend API URL.";
   }
   return error.message;
 }
@@ -42,65 +51,87 @@ function stateLabel(device) {
 }
 
 function formatDeviceResult(response) {
-  if (!response?.device) return response?.answer ?? "";
-
-  const state = response.device.is_on ? "on" : "off";
-  const addedDevice = response.tool_calls?.some((call) => call.tool === "add_device");
-  const changedState = response.tool_calls?.some((call) => call.tool === "toggle_device");
-  const summary = addedDevice
-    ? `${response.device.name} added successfully.`
-    : changedState
-    ? `${response.device.name} turned ${state} successfully.`
-    : `${response.device.name} is currently ${state}.`;
-
-  return [
-    summary,
-    "",
-    "Device Status",
-    `Name: ${response.device.name}`,
-    `Room: ${response.device.room}`,
-    `State: ${stateLabel(response.device)}`,
-    `Power: ${response.device.power_kw} kW`,
-  ].join("\n");
+  return response?.answer ?? "";
 }
 
-function formatTraceValue(value) {
-  if (value === null || value === undefined) return "";
-  if (typeof value === "boolean") return value ? "true" : "false";
-  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(1);
-  return String(value).replace(/^voltstream_/, "").replaceAll("_", " ");
+function cleanAnswerText(value = "") {
+  return value
+    .replace(/\*\*(.*?)\*\*/g, "$1")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-function describeTraceCall(call) {
-  const task = call.args?.task ? formatTraceValue(call.args.task) : "";
-  const route = call.result?.route ? formatTraceValue(call.result.route) : "";
-  const agent = call.result?.agent ? formatTraceValue(call.result.agent) : call.tool;
-  const metrics = [];
+function parseAnswer(value = "") {
+  return cleanAnswerText(value)
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const bulletMatch = line.match(/^[-*]\s+(.+)$/);
+      if (bulletMatch) return { type: "bullet", text: cleanAnswerText(bulletMatch[1]) };
 
-  if (call.result?.total_grid_kwh !== undefined) metrics.push(`grid ${formatTraceValue(call.result.total_grid_kwh)} kWh`);
-  if (call.result?.total_net_kwh !== undefined) metrics.push(`net ${formatTraceValue(call.result.total_net_kwh)} kWh`);
-  if (call.result?.highest_day) metrics.push(`peak ${formatTraceValue(call.result.highest_day)}`);
-  if (call.result?.highest_point) metrics.push(`peak ${formatTraceValue(call.result.highest_point)}`);
-  if (call.result?.period) metrics.push(`period ${formatTraceValue(call.result.period)}`);
-  if (call.result?.recommendation_count !== undefined) metrics.push(`${formatTraceValue(call.result.recommendation_count)} recommendations`);
-  if (call.result?.target_savings_kwh !== undefined) metrics.push(`target ${formatTraceValue(call.result.target_savings_kwh)} kWh`);
+      const numberedMatch = line.match(/^\d+[.)]\s+(.+)$/);
+      if (numberedMatch) return { type: "bullet", text: cleanAnswerText(numberedMatch[1]) };
 
-  if (route) return `${agent} routed ${task || "request"} to ${route}`;
-  if (task && metrics.length) return `${agent} completed ${task}: ${metrics.join(", ")}`;
-  if (task) return `${agent} completed ${task}`;
-  return agent;
+      const actionLineMatch = line.match(/^(Optimize|Shift|Schedule|Reduce|Turn|Charge|Run|Use|Set|Start|Target)\b(.+)$/i);
+      if (actionLineMatch) return { type: "bullet", text: cleanAnswerText(line) };
+
+      if (line.endsWith(":")) return { type: "heading", text: cleanAnswerText(line.replace(/:$/, "")) };
+      return { type: "paragraph", text: cleanAnswerText(line) };
+    });
 }
 
-function AgentTrace({ loop = [], calls = [] }) {
-  if (!loop.length && !calls.length) return null;
+function AgentAnswer({ text }) {
+  const blocks = parseAnswer(text);
+  const rendered = [];
+  let bullets = [];
+
+  function flushBullets(key) {
+    if (bullets.length === 0) return;
+    const current = bullets;
+    bullets = [];
+    rendered.push(
+      <ul className="assistant-answer-list" key={`list-${key}`}>
+        {current.map((item, index) => (
+          <li key={`${item}-${index}`}>{item}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  blocks.forEach((block, index) => {
+    if (block.type === "bullet") {
+      bullets.push(block.text);
+      return;
+    }
+
+    flushBullets(index);
+    if (block.type === "heading") {
+      rendered.push(
+        <strong className="assistant-answer-heading" key={index}>
+          {block.text}
+        </strong>
+      );
+      return;
+    }
+
+    rendered.push(<p key={index}>{block.text}</p>);
+  });
+  flushBullets("end");
+
+  return <div className="assistant-answer-content">{rendered}</div>;
+}
+
+function AgentLoop({ loop = [] }) {
+  if (!loop || loop.length === 0) return null;
 
   return (
-    <div className="agent-trace" aria-label="Agent trace log">
-      <div className="agent-trace-title">
-        <Activity size={16} />
-        <span>Trace Log</span>
-      </div>
-      {loop.length > 0 && (
+    <details className="agent-trace">
+      <summary>
+        <span>Agent Loop</span>
+        <small>{loop.length} steps</small>
+      </summary>
+      <div className="agent-trace-content">
         <ol className="agent-loop-list">
           {loop.map((step, index) => (
             <li key={`${step}-${index}`}>
@@ -109,18 +140,8 @@ function AgentTrace({ loop = [], calls = [] }) {
             </li>
           ))}
         </ol>
-      )}
-      {calls.length > 0 && (
-        <div className="agent-tool-trace">
-          {calls.map((call, index) => (
-            <div className="agent-tool-step" key={`${call.tool}-${index}`}>
-              <ArrowRight size={14} />
-              <p>{describeTraceCall(call)}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+      </div>
+    </details>
   );
 }
 
@@ -159,8 +180,7 @@ export function DeviceAgent() {
         {
           role: "agent",
           text: requestMode === "device" ? formatDeviceResult(response) : response.answer,
-          trace: response.tool_calls ?? [],
-          loop: response.agent_loop ?? [],
+          agentLoop: response.agent_loop ?? [],
         },
       ]);
     } catch (error) {
@@ -258,9 +278,13 @@ export function DeviceAgent() {
                     <div className="assistant-message-head">
                       <span>{message.role === "user" ? "You" : activeContent.name}</span>
                     </div>
-                    <p>{message.text}</p>
-                    {message.role === "agent" && (
-                      <AgentTrace loop={message.loop} calls={message.trace} />
+                    {message.role === "agent" && !message.isError ? (
+                      <AgentAnswer text={message.text} />
+                    ) : (
+                      <p>{message.text}</p>
+                    )}
+                    {message.role === "agent" && !message.isError && (
+                      <AgentLoop loop={message.agentLoop} />
                     )}
                   </article>
                 ))

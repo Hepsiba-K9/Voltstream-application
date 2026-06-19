@@ -1,0 +1,79 @@
+{
+  "total_questions_tested": 10,
+  "passed": 3,
+  "failed": 7,
+  "final_result": "FAIL",
+  "pass_condition": "At least 7 out of 10 answers should pass.",
+  "results": [
+    {
+      "question": "What is energy efficiency and why is it important for reducing costs and emissions?",
+      "answer": "Energy efficiency refers to using less energy to perform the same task while reducing energy waste. It is important for reducing costs because it lowers operational costs for businesses and saves money on electricity and fuel bills for households. Energy efficiency is important for reducing emissions as it decreases greenhouse gas emissions, air pollution, and climate change impacts.",
+      "faithfulness_score": 5,
+      "relevance_score": 5,
+      "pass": true
+    },
+    {
+      "question": "What are the recommended solar panel tilt angle and placement for maximum output?",
+      "answer": "For maximum solar output, panels should face true south in the northern hemisphere and true north in the southern hemisphere. The recommended panel tilt angle is usually close to the site's latitude, with practical adjustments of latitude minus 10 to 15 degrees in summer and latitude plus 10 to 15 degrees in winter. It is also crucial to keep panels clear of shade between 9 a.m. and 3 p.m.",
+      "faithfulness_score": 5,
+      "relevance_score": 5,
+      "pass": true
+    },
+    {
+      "question": "What are the fastest low-cost actions to reduce home energy use?",
+      "answer": "Fastest low-cost actions to reduce home energy use include cleaning refrigerator coils, ensuring the refrigerator door gasket seals properly, and scheduling flexible loads away from expensive evening periods if your tariff has time-of-use pricing. Monitoring daily grid draw, solar generation, and net usage can also help identify issues.",
+      "faithfulness_score": 5,
+      "relevance_score": 5,
+      "pass": true
+    },
+    {
+      "question": "Which appliances are good candidates for load shifting to solar production hours?",
+      "answer": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/online_prediction_requests_per_base_model with base model: textembedding-gecko. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}",
+      "faithfulness_score": 0,
+      "relevance_score": 0,
+      "pass": false
+    },
+    {
+      "question": "Why should panels be kept clear of shade between 9 a.m. and 3 p.m.?",
+      "answer": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/online_prediction_requests_per_base_model with base model: textembedding-gecko. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}",
+      "faithfulness_score": 0,
+      "relevance_score": 0,
+      "pass": false
+    },
+    {
+      "question": "What does a high grid draw during bright midday hours typically indicate?",
+      "answer": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/online_prediction_requests_per_base_model with base model: textembedding-gecko. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}",
+      "faithfulness_score": 0,
+      "relevance_score": 0,
+      "pass": false
+    },
+    {
+      "question": "What are modern technologies used to improve energy efficiency?",
+      "answer": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/online_prediction_requests_per_base_model with base model: textembedding-gecko. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}",
+      "faithfulness_score": 0,
+      "relevance_score": 0,
+      "pass": false
+    },
+    {
+      "question": "What does a sudden increase in night usage often point to?",
+      "answer": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/online_prediction_requests_per_base_model with base model: textembedding-gecko. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}",
+      "faithfulness_score": 0,
+      "relevance_score": 0,
+      "pass": false
+    },
+    {
+      "question": "What are the main challenges limiting energy efficiency improvements?",
+      "answer": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/online_prediction_requests_per_base_model with base model: textembedding-gecko. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}",
+      "faithfulness_score": 0,
+      "relevance_score": 0,
+      "pass": false
+    },
+    {
+      "question": "How do smart grids and energy management systems contribute to efficiency?",
+      "answer": "Error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Quota exceeded for aiplatform.googleapis.com/online_prediction_requests_per_base_model with base model: textembedding-gecko. Please submit a quota increase request. https://cloud.google.com/vertex-ai/docs/generative-ai/quotas-genai.', 'status': 'RESOURCE_EXHAUSTED'}}",
+      "faithfulness_score": 0,
+      "relevance_score": 0,
+      "pass": false
+    }
+  ]
+}

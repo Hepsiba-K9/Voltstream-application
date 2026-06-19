@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Any, Literal
 
 
 class LivePowerSample(BaseModel):
@@ -69,8 +69,17 @@ class AgentRequest(BaseModel):
 
 class AgentToolCall(BaseModel):
     tool: str
-    args: dict[str, str | bool | float]
-    result: dict[str, str | bool | float | None]
+    metadata: dict[str, str] = Field(default_factory=dict)
+    args: dict[str, Any]
+    result: dict[str, Any]
+
+
+class AgentEvaluationSummary(BaseModel):
+    total_questions_tested: int
+    passed: int
+    failed: int
+    final_result: str
+    pass_condition: str
 
 
 class AgentResponse(BaseModel):
@@ -78,6 +87,7 @@ class AgentResponse(BaseModel):
     device: DeviceResponse | None = None
     tool_calls: list[AgentToolCall] = Field(default_factory=list)
     agent_loop: list[str] = Field(default_factory=list)
+    agent_evaluation: AgentEvaluationSummary | None = None
 
 
 class ChatRequest(BaseModel):
@@ -95,6 +105,7 @@ class QARequest(BaseModel):
 class SourceChunk(BaseModel):
     source: str
     chunk_id: str
+    score: str = ""
     text: str
 
 

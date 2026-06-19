@@ -1,4 +1,8 @@
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "";
+const DEPLOYED_API_BASE = "https://voltstream-backend-335699237868.us-central1.run.app";
+const configuredApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
+const API_BASE = configuredApiBase || (window.location.hostname.endsWith(".web.app") || window.location.hostname.endsWith(".firebaseapp.com")
+  ? DEPLOYED_API_BASE
+  : "");
 const REQUEST_TIMEOUT_MS = 8000;
 const AI_TIMEOUT_MS = 90000;
 
@@ -25,17 +29,25 @@ async function request(path, options = {}) {
     window.clearTimeout(timeoutId);
   }
 
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!contentType.includes("application/json")) {
+    const error = new Error("Backend returned a non-JSON response. Check the API base URL and backend deployment.");
+    error.status = response.status;
+    throw error;
+  }
+
+  const body = await response.json();
+
   if (!response.ok) {
     let detail = `Request failed: ${response.status}`;
-    try {
-      const errorBody = await response.json();
-      detail = errorBody.detail ?? detail;
-    } catch {
-      // Keep the status-only message when the API does not return JSON.
+    if (body?.detail) {
+      detail = Array.isArray(body.detail) ? body.detail.map((item) => item.msg ?? String(item)).join(", ") : body.detail;
     }
-    throw new Error(detail);
+    const error = new Error(detail);
+    error.status = response.status;
+    throw error;
   }
-  return response.json();
+  return body;
 }
 
 export function getLiveStatus() {

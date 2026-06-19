@@ -11,8 +11,12 @@ function cleanAnswerText(value) {
 }
 
 function formatAssistantError(error) {
-  if (error.message.includes("GEMINI_API_KEY")) {
-    return "Gemini is not configured yet. Add GEMINI_API_KEY in .env and restart the backend.";
+  if (
+    error.message.includes("GOOGLE_GENAI_USE_VERTEXAI") ||
+    error.message.includes("GOOGLE_CLOUD_PROJECT") ||
+    error.message.includes("GEMINI_API_KEY")
+  ) {
+    return "Gemini is not configured yet. Add Vertex AI settings to .env and restart the backend.";
   }
   if (error.message.includes("Backend unavailable")) {
     return "Backend unavailable. Start the backend and try again.";

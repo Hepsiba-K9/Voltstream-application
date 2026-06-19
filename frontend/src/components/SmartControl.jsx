@@ -2,6 +2,7 @@ import {
   AirVent,
   BatteryCharging,
   Grid2X2,
+  Lightbulb,
   List,
   Plus,
   Power,
@@ -20,6 +21,7 @@ const deviceIcons = {
   Mobility: BatteryCharging,
   Appliance: Shirt,
   Thermal: Thermometer,
+  Lighting: Lightbulb,
 };
 
 const energyPeriods = {
@@ -157,6 +159,7 @@ export function SmartControl() {
             <select value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })}>
               <option>Appliance</option>
               <option>Climate</option>
+              <option>Lighting</option>
               <option>Mobility</option>
               <option>Thermal</option>
             </select>
@@ -204,6 +207,7 @@ export function SmartControl() {
             <option value="all">All Devices</option>
             <option value="Climate">Climate</option>
             <option value="Appliance">Appliance</option>
+            <option value="Lighting">Lighting</option>
             <option value="Mobility">Mobility</option>
             <option value="Thermal">Thermal</option>
           </select>

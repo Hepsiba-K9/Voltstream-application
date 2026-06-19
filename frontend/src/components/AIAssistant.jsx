@@ -46,8 +46,12 @@ const promptCards = [
 ];
 
 function formatAssistantError(error) {
-  if (error.message.includes("GEMINI_API_KEY")) {
-    return "Gemini is not configured yet. Create a .env file at the project root, add GEMINI_API_KEY, then restart the backend.";
+  if (
+    error.message.includes("GOOGLE_GENAI_USE_VERTEXAI") ||
+    error.message.includes("GOOGLE_CLOUD_PROJECT") ||
+    error.message.includes("GEMINI_API_KEY")
+  ) {
+    return "Gemini is not configured yet. Add Vertex AI settings to .env, then restart the backend.";
   }
   if (error.message.includes("Backend unavailable")) {
     return "Backend unavailable. Run start_backend.bat from the project folder and keep that window open.";

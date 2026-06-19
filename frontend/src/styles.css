@@ -1544,6 +1544,135 @@ h2 {
   color: #15803d;
 }
 
+.agent-trace {
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  margin-top: 16px;
+  padding-top: 14px;
+  width: 100%;
+}
+
+.agent-trace-title {
+  color: #0f2a4d;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.agent-loop-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.agent-loop-list li {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+
+.agent-loop-list li > span,
+.agent-tool-step-head > span {
+  align-items: center;
+  background: #eaf5ff;
+  border-radius: 999px;
+  color: #0d5c9f;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.agent-loop-list p,
+.agent-tool-step p,
+.agent-trace-fields dd {
+  color: #152b4a;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.agent-tool-trace {
+  display: grid;
+  gap: 12px;
+}
+
+.agent-tool-step {
+  background: #f8fbff;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.agent-tool-step-head {
+  align-items: start;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+
+.agent-tool-step strong {
+  color: #006b3f;
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.agent-route-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agent-route-row span {
+  background: #ecfdf5;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  border-radius: 999px;
+  color: #075f3b;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 5px 9px;
+}
+
+.agent-route-row b {
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.agent-trace-fields {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  margin: 0;
+}
+
+.agent-trace-fields div {
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  min-width: 0;
+  padding: 8px;
+}
+
+.agent-trace-fields dt {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
 .agent-robot-image {
   display: block;
   height: clamp(150px, 22vw, 250px);
@@ -4256,4 +4385,290 @@ h2 {
     margin-left: 0;
     width: max-content;
   }
+}
+
+.agent-chat-console .agent-trace {
+  border-top: 0;
+  margin-top: 16px;
+  padding-top: 0;
+  width: 100%;
+}
+
+.agent-chat-console .agent-trace summary {
+  align-items: center;
+  background: #f8fbff;
+  border: 1px solid rgba(59, 130, 246, 0.24);
+  border-radius: 8px;
+  color: #0f2a4d;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 10px;
+  list-style: none;
+  padding: 8px 12px;
+  user-select: none;
+}
+
+.agent-chat-console .agent-trace summary::-webkit-details-marker {
+  display: none;
+}
+
+.agent-chat-console .agent-trace summary::after {
+  color: #64748b;
+  content: "Show";
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.agent-chat-console .agent-trace[open] summary::after {
+  content: "Hide";
+}
+
+.agent-chat-console .agent-trace summary span {
+  color: #0d5c9f;
+  font-size: 0.84rem;
+  font-weight: 900;
+  line-height: 1.2;
+}
+
+.agent-chat-console .agent-trace summary small {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.agent-chat-console .agent-trace-content {
+  border-top: 1px solid rgba(148, 163, 184, 0.28);
+  margin-top: 12px;
+  padding-top: 14px;
+}
+
+.agent-chat-console .agent-trace-title {
+  color: #0f2a4d;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+}
+
+.agent-chat-console .agent-loop-list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.agent-chat-console .agent-loop-list li {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+
+.agent-chat-console .agent-loop-list li > span,
+.agent-chat-console .agent-tool-step-head > span {
+  align-items: center;
+  background: #eaf5ff;
+  border-radius: 999px;
+  color: #0d5c9f;
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  height: 28px;
+  justify-content: center;
+  width: 28px;
+}
+
+.agent-chat-console .agent-loop-list p,
+.agent-chat-console .agent-tool-step p,
+.agent-chat-console .agent-trace-fields dd {
+  color: #152b4a;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.agent-chat-console .agent-tool-trace {
+  display: grid;
+  gap: 12px;
+}
+
+.agent-chat-console .agent-tool-step {
+  background: #f8fbff;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.agent-chat-console .agent-tool-step-head {
+  align-items: start;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 28px minmax(0, 1fr);
+}
+
+.agent-chat-console .agent-tool-step strong {
+  color: #006b3f;
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+.agent-chat-console .agent-route-row {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.agent-chat-console .agent-route-row span {
+  background: #ecfdf5;
+  border: 1px solid rgba(34, 197, 94, 0.22);
+  border-radius: 999px;
+  color: #075f3b;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 5px 9px;
+}
+
+.agent-chat-console .agent-route-row b {
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.agent-chat-console .agent-trace-fields {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  margin: 0;
+}
+
+.agent-chat-console .agent-trace-fields div {
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 8px;
+  min-width: 0;
+  padding: 8px;
+}
+
+.agent-chat-console .agent-trace-fields dt {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 900;
+  margin-bottom: 3px;
+  text-transform: uppercase;
+}
+
+.agent-chat-console .agent-tool-step {
+  background: #f8fbff;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 8px;
+  display: block;
+  padding: 12px;
+}
+
+.agent-chat-console .agent-simple-step-head {
+  align-items: start;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 64px minmax(0, 1fr);
+  margin-bottom: 10px;
+}
+
+.agent-chat-console .agent-simple-step-head b {
+  color: #0d5c9f;
+  font-size: 0.8rem;
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.agent-chat-console .agent-simple-step-head strong {
+  color: #006b3f;
+  display: block;
+  font-size: 0.96rem;
+  line-height: 1.35;
+  margin: 0 0 3px;
+}
+
+.agent-chat-console .agent-simple-step-head p,
+.agent-chat-console .agent-tool-step > p {
+  color: #475569;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.agent-chat-console .agent-simple-fields {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin: 10px 0 0;
+}
+
+.agent-chat-console .agent-simple-fields div {
+  background: #ffffff;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 6px;
+  min-width: 0;
+  padding: 8px;
+}
+
+.agent-chat-console .agent-simple-fields dt {
+  color: #64748b;
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin: 0 0 4px;
+  text-transform: uppercase;
+}
+
+.agent-chat-console .agent-simple-fields dd {
+  color: #152b4a;
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.agent-chat-console .agent-route-row,
+.agent-chat-console .agent-trace-fields,
+.agent-chat-console .agent-tool-step-head {
+  display: none;
+}
+.agent-chat-console .assistant-answer-content {
+  display: grid;
+  gap: 10px;
+}
+
+.agent-chat-console .assistant-answer-content p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.agent-chat-console .assistant-answer-heading {
+  display: block;
+  margin-top: 2px;
+  color: #082659;
+  font-size: 0.98rem;
+}
+
+.agent-chat-console .assistant-answer-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 8px;
+}
+
+.agent-chat-console .assistant-answer-list li {
+  line-height: 1.55;
+  padding-left: 2px;
 }

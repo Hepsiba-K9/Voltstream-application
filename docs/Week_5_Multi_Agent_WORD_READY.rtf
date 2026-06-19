@@ -1,0 +1,297 @@
+{\rtf1\ansi\deff0
+{\fonttbl{\f0 Calibri;}{\f1 Consolas;}}
+\pard\f0\fs22 \b Week 5 - Agentic AI Intermediate\b0\par
+\pard\f0\fs22 VoltStream Multi-Agent Energy Workflow\par
+\pard\f0\fs22 1. Title\par
+\pard\f0\fs22 \b Week 5 - Agentic AI Intermediate: VoltStream Multi-Agent Energy Workflow.\b0\par
+\pard\f0\fs22 2. Introduction\par
+\pard\f0\fs22 The Week 5 VoltStream task documents the multi-agent energy workflow already present in the backend agents folder. Instead of creating unrelated folders, this document uses the actual project files: comments.py, analyst_agent.py, advisor_agent.py, orchestrator_agent.py, and runner_agent.py.\par
+\pard\f0\fs22 The user sends an energy question to /api/v1/agent. The Orchestrator routes the request to the Analyst. The Analyst reads VoltStream usage and billing data. The Advisor creates recommendations. The Orchestrator formats the final answer.\par
+\pard\f0\fs22 3. Objective\par
+\pard\f0\fs22 The objective is to explain and demonstrate a multi-agent energy assistant for VoltStream. The assistant should analyze energy usage, identify top loads, include billing context, provide recommendations, and return the full agent loop trace.\par
+\pard\f0\fs22 4. Use Cases\par
+\pard\f0\fs22 Weekly usage summary: user asks for this week's or last week's energy usage.\par
+\pard\f0\fs22 Daily or monthly usage summary: user asks about today, yesterday, this month, or last month.\par
+\pard\f0\fs22 Top device load analysis: Analyst estimates which active devices contribute most.\par
+\pard\f0\fs22 Billing guidance: Analyst includes projected bill, budget limit, and solar credit.\par
+\pard\f0\fs22 Savings advice: Advisor gives practical steps to reduce grid usage and cost.\par
+\pard\f0\fs22 Traceable demo: response shows Orchestrator, Analyst, Advisor, and final answer steps.\par
+\pard\f0\fs22 5. File Structure\par
+\pard\f0\fs22 Recommended submission folder structure based on the actual Week 5 files:\par
+\pard\f1\fs18 Voltstream_application/\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- README.md\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- .env.example\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- backend/\par
+\pard\f1\fs18 |   |\par
+\pard\f1\fs18 |   |-- main.py\par
+\pard\f1\fs18 |   |\par
+\pard\f1\fs18 |   |-- api.py\par
+\pard\f1\fs18 |   |\par
+\pard\f1\fs18 |   |-- data_models.py\par
+\pard\f1\fs18 |   |\par
+\pard\f1\fs18 |   |-- database.py\par
+\pard\f1\fs18 |   |\par
+\pard\f1\fs18 |   `-- agents/\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       |-- __init__.py\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       |-- comments.py\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       |-- analyst_agent.py\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       |-- advisor_agent.py\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       |-- orchestrator_agent.py\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       `-- runner_agent.py\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- frontend/\par
+\pard\f1\fs18 |   |\par
+\pard\f1\fs18 |   `-- src/\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       |-- api.js\par
+\pard\f1\fs18 |       |\par
+\pard\f1\fs18 |       `-- components/DeviceAgent.jsx\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 `-- docs/\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 `-- Week_5_Multi_Agent_WORD_READY.docx\par
+\pard\f0\fs22 6. Use of Every Week 5 File\par
+\pard\f0\fs22 File\par
+\pard\f0\fs22 Use in Week 5 task\par
+\pard\f0\fs22 backend/agents/comments.py\par
+\pard\f0\fs22 Stores DEFAULT_MODEL, agent names, instructions, ENERGY_AGENT_LOOP, and capture_tool_trace.\par
+\pard\f0\fs22 backend/agents/analyst_agent.py\par
+\pard\f0\fs22 Analyzes usage period, grid usage, solar offset, net usage, top devices, and billing context.\par
+\pard\f0\fs22 backend/agents/advisor_agent.py\par
+\pard\f0\fs22 Creates recommendations from analyst output and calculates target savings.\par
+\pard\f0\fs22 backend/agents/orchestrator_agent.py\par
+\pard\f0\fs22 Routes between Analyst and Advisor, records route steps, and formats the final answer.\par
+\pard\f0\fs22 backend/agents/runner_agent.py\par
+\pard\f0\fs22 Runs the full multi-agent flow and returns answer, tool_calls, and agent_loop.\par
+\pard\f0\fs22 backend/api.py\par
+\pard\f0\fs22 Exposes POST /api/v1/agent and returns AgentResponse.\par
+\pard\f0\fs22 backend/data_models.py\par
+\pard\f0\fs22 Defines AgentRequest, AgentResponse, and AgentToolCall schemas.\par
+\pard\f0\fs22 backend/database.py\par
+\pard\f0\fs22 Provides usage history, device, and billing data used by Analyst Agent.\par
+\pard\f0\fs22 frontend/src/api.js\par
+\pard\f0\fs22 Sends frontend requests to backend endpoints.\par
+\pard\f0\fs22 frontend/src/components/DeviceAgent.jsx\par
+\pard\f0\fs22 Displays prompt input, answer, tool calls, and agent loop.\par
+\pard\f0\fs22 7. Working Flow of Week 5 Task\par
+\pard\f0\fs22 The working flow starts from the user prompt and ends with a structured AgentResponse. The system passes through API, runner, orchestrator, analyst, advisor, and final formatting layers.\par
+\pard\f0\fs22 User Energy Prompt\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 POST /api/v1/agent\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 run_energy_usage_agent(message)\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Orchestrator Agent\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Analyst Agent -> analyze_usage(message)\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Advisor Agent -> generate_recommendations(analysis)\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Orchestrator Agent -> _format_energy_answer(...)\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 AgentResponse(answer, tool_calls, ENERGY_AGENT_LOOP)\par
+\pard\f0\fs22 8. Week 5 Checkpoint\par
+\pard\f0\fs22 Send an energy-related request to POST /api/v1/agent.\par
+\pard\f0\fs22 Show that the request is routed to Analyst Agent.\par
+\pard\f0\fs22 Show that Analyst Agent reads usage history, active devices, solar offset, and billing context.\par
+\pard\f0\fs22 Show that the result is routed to Advisor Agent.\par
+\pard\f0\fs22 Show that Advisor Agent returns recommendations and target savings.\par
+\pard\f0\fs22 Show the final Orchestrator response and explain the tool_calls trace.\par
+\pard\f0\fs22 9. Hands-On Activities and Deliverables\par
+\pard\f0\fs22 Created specialist logic for Analyst Agent, Advisor Agent, and Orchestrator Agent.\par
+\pard\f0\fs22 Centralized agent names, prompts, and loop descriptions in comments.py.\par
+\pard\f0\fs22 Connected the flow through run_energy_usage_agent in runner_agent.py.\par
+\pard\f0\fs22 Returned answer, tool_calls, and ENERGY_AGENT_LOOP from the backend API.\par
+\pard\f0\fs22 Prepared documentation with file structure, file usage, working flow, endpoints, and code logic.\par
+\pard\f0\fs22 \b 10. Main Multi-Agent Loop\b0\par
+\pard\f0\fs22 User prompt received by FastAPI /api/v1/agent.\par
+\pard\f0\fs22 Orchestrator Agent routes request to Analyst Agent.\par
+\pard\f0\fs22 Analyst Agent reads usage period, usage history, devices, solar data, and billing context.\par
+\pard\f0\fs22 Orchestrator Agent sends analysis to Advisor Agent.\par
+\pard\f0\fs22 Advisor Agent converts analysis into recommendations.\par
+\pard\f0\fs22 Orchestrator Agent formats and returns the final answer.\par
+\pard\f0\fs22 \b 11. Architecture of Multi-Agents Working Flow\b0\par
+\pard\f0\fs22 The Week 5 architecture is a layered multi-agent workflow. The user interacts with the frontend or API client. FastAPI receives the prompt and calls runner_agent.py. The runner does not perform all work by itself; it coordinates the Orchestrator, Analyst, and Advisor sequence. Each agent has a focused responsibility, and the final response is built from their combined output.\par
+\pard\f0\fs22 Architecture flowchart\par
+\pard\f0\fs22 Frontend / API Client\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |  POST /api/v1/agent\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 FastAPI Endpoint - backend/api.py\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |  request.agent_type = energy\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Runner Layer - backend/agents/runner_agent.py\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |  capture_tool_trace()\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Orchestrator Agent - orchestrator_agent.py\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- route_energy_usage_request\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Analyst Agent - analyst_agent.py\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- reads usage history\par
+\pard\f1\fs18 |-- reads active devices\par
+\pard\f1\fs18 |-- reads billing summary\par
+\pard\f1\fs18 |-- calculates grid / solar / net usage\par
+\pard\f1\fs18 |-- finds top device loads\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Structured Analysis Result\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- route_analysis_to_advisor\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Advisor Agent - advisor_agent.py\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- reviews top loads\par
+\pard\f1\fs18 |-- creates recommendations\par
+\pard\f1\fs18 |-- calculates target savings\par
+\pard\f1\fs18 |-- checks budget risk\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Recommendation Result\par
+\pard\f1\fs18 |\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 Orchestrator Agent - final formatting\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- combines usage + advice + billing\par
+\pard\f0\fs22 v\par
+\pard\f0\fs22 AgentResponse\par
+\pard\f1\fs18 |\par
+\pard\f1\fs18 |-- answer\par
+\pard\f1\fs18 |-- tool_calls\par
+\pard\f0\fs22 `-- ENERGY_AGENT_LOOP\par
+\pard\f0\fs22 Architecture explanation\par
+\pard\f0\fs22 Frontend/API Client is the user-facing layer. It sends the prompt to the backend.\par
+\pard\f0\fs22 FastAPI endpoint validates the request and decides which runner function should handle it.\par
+\pard\f0\fs22 Runner Agent is the execution layer. It starts trace capture and calls each specialist step in order.\par
+\pard\f0\fs22 Orchestrator Agent is the routing and final-formatting layer. It decides the flow and prepares the final response.\par
+\pard\f0\fs22 Analyst Agent is the data-understanding layer. It reads usage, solar, device, and billing data.\par
+\pard\f0\fs22 Advisor Agent is the recommendation layer. It converts analysis into actions the user can follow.\par
+\pard\f0\fs22 comments.py supports the whole architecture by storing names, prompts, and ENERGY_AGENT_LOOP.\par
+\pard\f0\fs22 AgentResponse is the output layer. It returns answer, tool_calls, and agent_loop to the frontend.\par
+\pard\f0\fs22 \b 12. API Endpoints Related to Week 5\b0\par
+\pard\f0\fs22 Method\par
+\pard\f0\fs22 Endpoint\par
+\pard\f0\fs22 Purpose\par
+\pard\f0\fs22 POST\par
+\pard\f0\fs22 /api/v1/agent\par
+\pard\f0\fs22 Main Week 5 endpoint for the multi-agent energy workflow.\par
+\pard\f0\fs22 GET\par
+\pard\f0\fs22 /api/v1/analytics/history?period=daily|weekly|monthly\par
+\pard\f0\fs22 Provides usage history used by Analyst Agent.\par
+\pard\f0\fs22 GET\par
+\pard\f0\fs22 /api/v1/devices\par
+\pard\f0\fs22 Provides device list and active loads.\par
+\pard\f0\fs22 GET\par
+\pard\f0\fs22 /api/v1/billing/summary\par
+\pard\f0\fs22 Provides billing context.\par
+\pard\f0\fs22 GET\par
+\pard\f0\fs22 /api/v1/billing/trend\par
+\pard\f0\fs22 Provides billing trend context.\par
+\pard\f0\fs22 GET\par
+\pard\f0\fs22 /health\par
+\pard\f0\fs22 Checks backend health before demo.\par
+\pard\f0\fs22 \{\par
+\pard\f0\fs22 "message": "Show this week's energy usage and give recommendations",\par
+\pard\f0\fs22 "agent_type": "energy",\par
+\pard\f0\fs22 "user_id": "voltstream-user",\par
+\pard\f0\fs22 "session_id": "voltstream-session"\par
+\pard\f0\fs22 \}\par
+\pard\f0\fs22 \b 13. Main Code Logic\b0\par
+\pard\f0\fs22 \b 12.1 comments.py\b0\par
+\pard\f0\fs22 DEFAULT_MODEL = os.getenv("ADK_MODEL", "gemini-2.5-flash")\par
+\pard\f0\fs22 ORCHESTRATOR_AGENT_NAME = "voltstream_orchestrator_agent"\par
+\pard\f0\fs22 ANALYST_AGENT_NAME = "voltstream_analyst_agent"\par
+\pard\f0\fs22 ADVISOR_AGENT_NAME = "voltstream_advisor_agent"\par
+\pard\f0\fs22 ENERGY_AGENT_LOOP = [...]\par
+\pard\f0\fs22 comments.py keeps shared names, prompts, and loop text in one place. This keeps all agents consistent.\par
+\pard\f0\fs22 \b 12.2 analyst_agent.py\b0\par
+\pard\f0\fs22 def analyze_usage(message: str) -> dict[str, Any]:\par
+\pard\f0\fs22 period = _usage_period(message)\par
+\pard\f0\fs22 usage_history = get_usage_history(period)\par
+\pard\f0\fs22 devices = get_devices()\par
+\pard\f0\fs22 billing = get_billing_summary()\par
+\pard\f0\fs22 return analysis\par
+\pard\f0\fs22 Analyst Agent converts VoltStream usage and billing data into structured facts.\par
+\pard\f0\fs22 \b 12.3 advisor_agent.py\b0\par
+\pard\f0\fs22 def generate_recommendations(analysis: dict[str, Any]) -> dict[str, Any]:\par
+\pard\f0\fs22 recommendations = []\par
+\pard\f0\fs22 target_savings_kwh = round(total_grid_kwh * 0.12, 1)\par
+\pard\f0\fs22 return \{"recommendations": recommendations, "target_savings_kwh": target_savings_kwh\}\par
+\pard\f0\fs22 Advisor Agent converts the analysis into action-oriented recommendations.\par
+\pard\f0\fs22 \b 12.4 orchestrator_agent.py\b0\par
+\pard\f0\fs22 def _format_energy_answer(message, analysis, advice):\par
+\pard\f0\fs22 lines = [grid_usage, solar_offset, net_usage]\par
+\pard\f0\fs22 lines.extend(recommendations)\par
+\pard\f0\fs22 return "\\n".join(lines)\par
+\pard\f0\fs22 Orchestrator Agent controls routing and final response format.\par
+\pard\f0\fs22 \b 12.5 runner_agent.py\b0\par
+\pard\f0\fs22 def run_energy_usage_agent(message: str) -> dict[str, Any]:\par
+\pard\f0\fs22 _orchestrator_agent_route(..., ANALYST_AGENT_NAME)\par
+\pard\f0\fs22 analysis = analyze_usage(message)\par
+\pard\f0\fs22 _orchestrator_agent_route(..., ADVISOR_AGENT_NAME)\par
+\pard\f0\fs22 advice = generate_recommendations(analysis)\par
+\pard\f0\fs22 answer = _format_energy_answer(message, analysis, advice)\par
+\pard\f0\fs22 return \{"answer": answer, "tool_calls": trace, "agent_loop": ENERGY_AGENT_LOOP\}\par
+\pard\f0\fs22 runner_agent.py executes the full Week 5 flow in the correct order.\par
+\pard\f0\fs22 \b 14. Learning Objectives of Week 5 Task\b0\par
+\pard\f0\fs22 The learning objectives of Week 5 focus on understanding how a backend agent system can grow from one agent into a coordinated multi-agent workflow. The main learning is how to separate analysis, advice, routing, and execution into different files while still returning one clean answer to the user.\par
+\pard\f0\fs22 Understand how multi-agent systems split work between specialist agents.\par
+\pard\f0\fs22 Understand the role of the Orchestrator Agent in routing, sequencing, and final answer formatting.\par
+\pard\f0\fs22 Understand the role of the Analyst Agent in reading usage history, solar offset, device loads, and billing data.\par
+\pard\f0\fs22 Understand the role of the Advisor Agent in creating practical recommendations and target savings.\par
+\pard\f0\fs22 Understand how comments.py centralizes model name, agent names, instructions, and the visible agent loop.\par
+\pard\f0\fs22 Understand how runner_agent.py executes the complete flow and records tool_calls.\par
+\pard\f0\fs22 Understand how FastAPI exposes the multi-agent workflow through /api/v1/agent.\par
+\pard\f0\fs22 Understand how tool_calls and ENERGY_AGENT_LOOP make the internal workflow explainable during demo.\par
+\pard\f0\fs22 \b 15. Week 5 Topics Covered\b0\par
+\pard\f0\fs22 The Week 5 task screenshot focuses on Agentic AI at the intermediate level. The important topics are not only the project files, but also the concepts behind deploying, invoking, tracing, and explaining an agent workflow. The topics below summarize the Week 5 learning points in simple project-related language.\par
+\pard\f0\fs22 AgentCore\par
+\pard\f0\fs22 AgentCore is the managed runtime concept from the Week 5 task. Compared with running an agent only on a local machine, AgentCore adds a cloud execution layer where the agent can be deployed, invoked, tracked, and managed. In documentation terms, it explains how the agent moves from local development toward a production-style runtime.\par
+\pard\f0\fs22 Strands Agent\par
+\pard\f0\fs22 A Strands agent is the agent implementation style referenced in the Week 5 task. The main idea is to build an agent with clear tools, instructions, and a reasoning flow. In the VoltStream project, this maps to a multi-agent structure where the Orchestrator, Analyst, and Advisor each have focused responsibilities.\par
+\pard\f0\fs22 Sessions\par
+\pard\f0\fs22 A session is used to keep track of an invocation context. The Week 5 screenshot asks to show the session ID and execution logs. This is important because a session ID proves that the request was not just a one-line response; it went through a tracked agent invocation flow.\par
+\pard\f0\fs22 Memory\par
+\pard\f0\fs22 Memory means the ability to preserve useful context across agent interactions. In a production agent system, memory can help the assistant remember previous messages, user preferences, or task state. For VoltStream, memory could help continue an energy conversation across multiple prompts instead of treating every prompt as isolated.\par
+\pard\f0\fs22 Lifecycle management\par
+\pard\f0\fs22 Lifecycle management refers to how an agent is packaged, started, invoked, monitored, updated, and stopped. This matters in Week 5 because deployment is more advanced than local execution. A deployed agent needs a stable runtime lifecycle so it can be called repeatedly and observed through logs.\par
+\pard\f0\fs22 Invocation through Lambda\par
+\pard\f0\fs22 Invocation through Lambda means an external request can call a Lambda function, and Lambda can trigger the agent runtime. The screenshot specifically mentions the flow Lambda -> AgentCore -> Strands agent -> Bedrock -> response. This shows how an agent can be exposed through a cloud function instead of being manually run from a developer machine.\par
+\pard\f0\fs22 Execution logs\par
+\pard\f0\fs22 Execution logs are records of what happened during an invocation. They help prove that the agent was called, which session was used, which route was followed, and whether the response was generated successfully. In the VoltStream documentation, tool_calls and ENERGY_AGENT_LOOP provide a local project-style trace of this same idea.\par
+\pard\f0\fs22 Two-agent system: Device Control Agent + Energy Advisor Agent\par
+\pard\f0\fs22 The Week 5 task asks for a two-agent system idea: Device Control Agent plus Energy Advisor Agent. In the current VoltStream project, this is represented through specialist files. The device-control side handles device state, while the energy workflow uses Analyst and Advisor logic to understand usage and recommend savings actions.\par
+\pard\f0\fs22 What AgentCore adds compared with local execution\par
+\pard\f0\fs22 A managed runtime instead of only running Python locally.\par
+\pard\f0\fs22 Session IDs that help track invocations.\par
+\pard\f0\fs22 Execution logs for debugging and demonstration.\par
+\pard\f0\fs22 Lifecycle management for deployment and repeated runtime use.\par
+\pard\f0\fs22 A cloud invocation path through Lambda.\par
+\pard\f0\fs22 A clearer route toward production deployment.\par
+\pard\f0\fs22 \b 16. Demo Request and Expected Response\b0\par
+\pard\f0\fs22 Expected response: Orchestrator routes to Analyst, Analyst returns analysis, Orchestrator routes to Advisor, Advisor returns recommendations, and Orchestrator returns the final answer. The API response includes answer, tool_calls, and ENERGY_AGENT_LOOP.\par
+\pard\f0\fs22 \b 17. Deliverables Completed\b0\par
+\pard\f0\fs22 Analyst Agent documented.\par
+\pard\f0\fs22 Advisor Agent documented.\par
+\pard\f0\fs22 Orchestrator Agent documented.\par
+\pard\f0\fs22 Runner Agent documented.\par
+\pard\f0\fs22 comments.py shared instructions and trace logic documented.\par
+\pard\f0\fs22 API endpoints, working flow, file structure, and code logic documented.\par
+}

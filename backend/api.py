@@ -12,10 +12,10 @@ from ai_service import (
     upload_chat_document_to_memory,
 )
 from agents import run_device_agent, run_energy_usage_agent
+from agents.evaluation import get_agent_evaluation_summary
 from data_models import (
     AgentRequest,
     AgentResponse,
-    AgentToolCall,
     BillingLimitUpdate,
     BillingTrendPoint,
     ChatRequest,
@@ -32,6 +32,7 @@ from data_models import (
 )
 from database import (
     create_device,
+    get_database_connection_status,
     get_billing_trend as fetch_billing_trend,
     get_billing_summary as fetch_billing_summary,
     get_devices as fetch_devices,
@@ -43,6 +44,20 @@ from database import (
 
 
 router = APIRouter()
+
+
+def ai_error_status(error: Exception) -> int:
+    message = str(error)
+    if "RESOURCE_EXHAUSTED" in message or "429" in message:
+        return 429
+    return 503
+
+
+def ai_error_detail(error: Exception) -> str:
+    message = str(error)
+    if "RESOURCE_EXHAUSTED" in message or "429" in message:
+        return "Gemini quota is exhausted right now. Please wait a few minutes, switch to a lower-quota model, or increase the Vertex AI quota."
+    return message
 
 
 @router.get("/")
@@ -113,15 +128,20 @@ async def device_agent(request: AgentRequest) -> AgentResponse:
     if not message:
         raise HTTPException(status_code=400, detail="Message is required")
 
-    if request.agent_type == "energy":
-        result = run_energy_usage_agent(message)
-    else:
-        result = await run_device_agent(message, request.user_id, request.session_id)
+    try:
+        if request.agent_type == "energy":
+            result = await run_energy_usage_agent(message, request.user_id, request.session_id)
+        else:
+            result = await run_device_agent(message, request.user_id, request.session_id)
+    except Exception as exc:
+        raise HTTPException(status_code=ai_error_status(exc), detail=ai_error_detail(exc)) from exc
+
     return AgentResponse(
         answer=result["answer"],
         device=result["device"],
-        tool_calls=[AgentToolCall(**tool_call) for tool_call in result["tool_calls"]],
+        tool_calls=result.get("tool_calls", []),
         agent_loop=result["agent_loop"],
+        agent_evaluation=get_agent_evaluation_summary() if request.agent_type == "energy" else None,
     )
 
 
@@ -136,7 +156,7 @@ def chat(request: ChatRequest) -> ChatResponse:
             return ChatResponse(answer=generate_chat_response_from_upload(message))
         return ChatResponse(answer=generate_chat_response(message))
     except AIServiceError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(status_code=ai_error_status(exc), detail=ai_error_detail(exc)) from exc
 
 
 @router.post("/api/v1/qa", response_model=QAResponse)
@@ -152,7 +172,7 @@ def qa(request: QARequest) -> QAResponse:
             sources=[SourceChunk(**source) for source in sources],
         )
     except AIServiceError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(status_code=ai_error_status(exc), detail=ai_error_detail(exc)) from exc
 
 
 @router.get("/api/v1/qa/document", response_model=DocumentStatusResponse)
@@ -160,7 +180,7 @@ def qa_document_status() -> DocumentStatusResponse:
     try:
         return DocumentStatusResponse(**get_document_status())
     except AIServiceError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(status_code=ai_error_status(exc), detail=ai_error_detail(exc)) from exc
 
 
 @router.post("/api/v1/chat/upload", response_model=DocumentStatusResponse)
@@ -175,9 +195,14 @@ async def upload_chat_document(file: UploadFile = File(...)) -> DocumentStatusRe
     try:
         return DocumentStatusResponse(**upload_chat_document_to_memory(file.filename or "document.pdf", content))
     except AIServiceError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+        raise HTTPException(status_code=ai_error_status(exc), detail=ai_error_detail(exc)) from exc
 
 
 @router.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@router.get("/health/db")
+def database_health() -> dict[str, str | bool]:
+    return get_database_connection_status()
